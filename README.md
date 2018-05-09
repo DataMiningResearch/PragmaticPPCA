@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 sPCA-spark
 ===========
 
@@ -99,3 +100,7 @@ This command runs sPCA on top of Spark in the local machine with one worker thre
 - `[<max iterations>] (optional):` Maximum number of iterations before terminating, the default is 3
 - `[<output format>] (optional):` One of three supported output formats (DENSE/COO/LIL), the default is DENSE. See Section Output Format for more details.
 - `[<0/1 (compute projected matrix or not)>] (optional)` :  0 or 1 value that specifies whether the user wants to project the input matrix on the principal components or not. 1 means that the projected matrix will be computed, and 0 means it will not be computed. The projected matrix is written in the output folder specified  by `-DOutput`
+=======
+# PragmaticPPCA
+The source code for the paper PragmaticPPCA
+>>>>>>> b5620665a68fd9f31109162cad51af7921fc3e89
