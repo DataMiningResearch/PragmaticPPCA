@@ -9,6 +9,17 @@ The first step is to clone this repo in the master node. After cloning, you can 
 ```
 mvn clean package
 ```
+If mvn is not installed, you can install mvn by running the following commands:
+```
+wget http://mirror.olnevhost.net/pub/apache/maven/maven-3/3.0.5/binaries/apache-maven-3.0.5-bin.tar.gz
+tar xvf apache-maven-3.0.5-bin.tar.gz
+mv apache-maven-3.0.5  /usr/local/apache-maven
+export M2_HOME=/usr/local/apache-maven
+export M2=$M2_HOME/bin 
+export PATH=$M2:$PATH
+source ~/.bashrc
+mvn -version
+```
 
 The next step is to run sPCA-spark on a small toy matrix. There is an example script located in `sPCA/spca-spark/spca-spark_example.sh`. First, you need to set the environment variable `SPARK_HOME` to the directory where Spark is downloaded and installed:
 ```
