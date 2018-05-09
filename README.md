@@ -21,6 +21,13 @@ source ~/.bashrc
 mvn -version
 ```
 
+To avoid any problems due to connection interrupt, install tmux and run all the remaining commands in tmux session
+```sudo yum install tmux
+tmux //to create a new session
+tmux attach //to attach to the current session
+ctrl b+d //to detach from the session
+```
+
 The next step is to run sPCA-spark on a small toy matrix. There is an example script located in `sPCA/spca-spark/spca-spark_example.sh`. First, you need to set the environment variable `SPARK_HOME` to the directory where Spark is downloaded and installed:
 ```
 export SPARK_HOME=<path/to/spark/directory> (e.g., /usr/lib/spark-1.0.0)
