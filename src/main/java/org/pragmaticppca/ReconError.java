@@ -175,7 +175,7 @@ public class ReconError implements Serializable {
 		}
 
 		// Setting Spark configuration parameters
-		SparkConf conf = new SparkConf().setAppName("ReconError").setMaster("local[*]");//
+		SparkConf conf = new SparkConf().setAppName("ReconError");//.setMaster("local[*]");//
 		// TODO
 		// remove
 		// this

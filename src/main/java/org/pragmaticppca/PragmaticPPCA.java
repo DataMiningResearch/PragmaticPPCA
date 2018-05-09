@@ -282,7 +282,7 @@ public class PragmaticPPCA implements Serializable {
 		
 
 		// Setting Spark configuration parameters
-		SparkConf conf = new SparkConf().setAppName("pragmaticPPCA").setMaster("local[*]");//
+		SparkConf conf = new SparkConf().setAppName("pragmaticPPCA");//.setMaster("local[*]");//
 		// TODO
 		// remove
 		// this
@@ -695,6 +695,7 @@ public class PragmaticPPCA implements Serializable {
 				writePC=scanner.nextBoolean();
 				
 			}
+
 			// compute principal components
 			computePrincipalComponents(sc, vectors, br_ym_mahout, meanVector, norm2, outputPath, nRows, nCols, nPCs,
 					subsample, tolerance,  maxIterations, handleMissing, sketchEnable,loadSeed, inputPathSeed, writeSeed, writePC);
