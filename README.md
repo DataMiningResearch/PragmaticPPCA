@@ -30,7 +30,13 @@ ctrl b+d //to detach from the session
 This command runs PrgmaticPPC:
 
 ```
-~/spark/bin/spark-submit --class org.pragmaticppca.PragmaticPPCA --master <master_url> --conf spark.cores.max=64 --conf spark.driver.maxResultSize=0 --conf spark.network.timeout=4000s --driver-memory <mb> --executor-memory <mb> --driver-java-options "-Di=<path/to/input/matrix> -Do=<path/to/outputfolder> -Drows=<number of rows>  -Dcols=<number of columns> -Dpcs=<number of principal components> -DsynMissing=<sythetically create missing ids?> -DmissingPerc=<if so by what percent?> -DwriteMissingIDs=<save these ids to file?> -DloadMissingIDs=<load missing ids from file? synMissing is set to false if true> -DiMissing=<path to missing ids> -DmaxIter=<max iterations> -DloadSeed=<load random starting point from file> -DiSeed=<path to seed> -DwriteSeed=<write current random starting point to file> -DhandleMissing=<handle missing value? if false missing ids are imputed with zero values> -DsketchEnable=<sketch to get a warm initialization point?> -DwritePC=<write principal components to file?> -Dclusters=<number of paritions>" ./target/sparkPCA-1.0.jar
+~/spark/bin/spark-submit --class org.pragmaticppca.PragmaticPPCA --master <master_url> --conf spark.cores.max=64 --conf spark.driver.maxResultSize=0 --conf spark.network.timeout=4000s --driver-memory <mb> --executor-memory <mb> 
+
+--driver-java-options "-Di=<path/to/input/matrix> -Do=<path/to/outputfolder> -Drows=<number of rows>  -Dcols=<number of columns> -Dpcs=<number of principal components> -DsynMissing=<sythetically create missing ids?> -DmissingPerc=<if so by what percent?> 
+
+-DwriteMissingIDs=<save these ids to file?> -DloadMissingIDs=<load missing ids from file? synMissing is set to false if true> -DiMissing=<path to missing ids> -DmaxIter=<max iterations> -DloadSeed=<load random starting point from file> -DiSeed=<path to seed> 
+
+-DwriteSeed=<write current random starting point to file> -DhandleMissing=<handle missing value? if false missing ids are imputed with zero values> -DsketchEnable=<sketch to get a warm initialization point?> -DwritePC=<write principal components to file?> -Dclusters=<number of paritions>" ./target/sparkPCA-1.0.jar
 ```
 
 We can derive (k+1)th singular value to check true error and derive error for the stored principal components efficiently by running codes from this: https://github.com/DataMiningResearch/sSketch
