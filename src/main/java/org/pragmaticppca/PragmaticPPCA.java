@@ -169,7 +169,7 @@ public class PragmaticPPCA implements Serializable {
 				
 				try {
 					writeMissingIDs = Boolean.parseBoolean(System.getProperty("writeMissingIDs"));
-					System.out.println("PrintMissingIDs is set to" + writeMissingIDs);
+					System.out.println("writeMissingIDs is set to" + writeMissingIDs);
 				} catch (Exception e) {
 					System.out.println("writeMissingIDs is set to False");
 				}
@@ -193,9 +193,9 @@ public class PragmaticPPCA implements Serializable {
 					return;
 				}
 			}
-			System.out.println("loadMissingIDs is set to true");	
+			System.out.println("loadMissingIDs is set to:"+loadMissingIDs);	
 		} catch (Exception e) {
-			System.out.println("loadMissingIDs is set to false");	
+			System.out.println("loadMissingIDs is set to"+loadMissingIDs);	
 			
 		}
 		
@@ -1348,8 +1348,8 @@ public class PragmaticPPCA implements Serializable {
 				for(int b=0;b<nPCs;b++){
 					maxWnew=Math.max(Math.abs(centralC.getQuick(a,b)),maxWnew);
 					dw=Math.max(
-							Math.abs(oldcentralC.getQuick(a,b)
-									-centralC.getQuick(a,b)),dw);
+							Math.abs(oldcentralC.getQuick(a,b))
+									-Math.abs(centralC.getQuick(a,b)),dw);
 				}
 			}
 			

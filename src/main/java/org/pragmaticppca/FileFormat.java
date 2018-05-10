@@ -199,12 +199,12 @@ public class FileFormat {
 	          writer=SequenceFile.createWriter(fs, conf, new Path(outputFileName), IntWritable.class, VectorWritable.class, CompressionType.BLOCK);
 	          
 	          while ((thisLine = br.readLine()) != null) { // while loop begins here   		   
-	        	  String [] splitted = thisLine.split("\\s+");
+	        	  String [] splitted = thisLine.split(",");
 	        	  int rowID=Integer.parseInt(splitted[0]);
 	        	  int colID=Integer.parseInt(splitted[1]);
 	        	  double element=Double.parseDouble(splitted[2]);
 	        	  //if(count==1000) break;//take first 5000 count line number
-	        	  if(colID>10000) continue;//take 5000 columns
+	        	  if(colID>50000) continue;//take 5000 columns
 	        	  if(first)
 	        	  {
 	        		  first=false;
@@ -212,7 +212,7 @@ public class FileFormat {
 	        	  }
 	        	  else if(rowID != prevRowID)
 	        	  {
-	        		  key.set(prevRowID);
+	        		  key.set(lineNumber++);
 	        		  value.set(vector);
 	            	  //System.out.println(vector);
 	        		  count++;
@@ -225,7 +225,7 @@ public class FileFormat {
           }
           if(writer!=null) //append last vector in last file
           {
-	          key.set(prevRowID);
+	          key.set(lineNumber++);
 	          value.set(vector);
 	    	  writer.append(key,value);//write last row
 	    	  System.out.println("Total number of rows"+count+"");
