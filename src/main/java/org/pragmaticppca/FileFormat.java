@@ -2,8 +2,17 @@ package org.pragmaticppca;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
 
+import org.apache.commons.collections.map.HashedMap;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -192,19 +201,57 @@ public class FileFormat {
           	  return;
           }
           int count=1;
+          
+          Map<Integer, ArrayList<Integer>> id=new HashedMap();
+
           for(File file:filePathList)
           {
         	  BufferedReader br = new BufferedReader(new FileReader(file));
         	  String outputFileName=outputFolderPath+ File.separator + file.getName() + ".seq";
 	          writer=SequenceFile.createWriter(fs, conf, new Path(outputFileName), IntWritable.class, VectorWritable.class, CompressionType.BLOCK);
 	          
-	          while ((thisLine = br.readLine()) != null) { // while loop begins here   		   
+	          while ((thisLine = br.readLine()) != null) { // while loop begins here  
+	        	  String [] splitted = thisLine.split(",");
+	        	  int colID=Integer.parseInt(splitted[1]);
+	        	  //if(count==1000) break;//take first 5000 count line number
+	        	  if(colID>50000) continue;//take 5000 columns
+	        	  count++;
+	        	  lineNumber++;
+	          }
+
+	         
+	          int nnzElems=lineNumber;
+	          System.out.println(nnzElems);
+				int size=(int) (nnzElems*30/100);
+				Random r = new Random();
+				count=0;
+				//randomly choose a row, then randomly choose the serial of a nonzero element
+				//using map for less memory, and ease of search
+				
+				Set<Integer> generated = new LinkedHashSet<Integer>();
+				while (generated.size() < size)
+				{
+				    Integer next = r.nextInt(nnzElems);
+				    // As we're adding to a set, this will automatically do a containment check
+				    generated.add(next);
+				    count++;
+				}
+			  System.out.println(count);
+	          lineNumber=0;
+	          count=0;
+	          br.close();
+	          int check=0;
+	          
+	          br = new BufferedReader(new FileReader(file));
+	          
+	          while ((thisLine = br.readLine()) != null) { // while loop begins here 
 	        	  String [] splitted = thisLine.split(",");
 	        	  int rowID=Integer.parseInt(splitted[0]);
 	        	  int colID=Integer.parseInt(splitted[1]);
 	        	  double element=Double.parseDouble(splitted[2]);
 	        	  //if(count==1000) break;//take first 5000 count line number
-	        	  if(colID>50000) continue;//take 5000 columns
+	        	  if(colID>50000) continue;//take 5000 column     	  
+	        	        
 	        	  if(first)
 	        	  {
 	        		  first=false;
@@ -212,25 +259,52 @@ public class FileFormat {
 	        	  }
 	        	  else if(rowID != prevRowID)
 	        	  {
-	        		  key.set(lineNumber++);
+	        		 
+	        		  key.set(count++);
 	        		  value.set(vector);
 	            	  //System.out.println(vector);
-	        		  count++;
+	        		  
 	            	  writer.append(key,value);//write last row
 	            	  vector = new SequentialAccessSparseVector(cardinality);
 	        	  }
 	        	  prevRowID=rowID;
 	        	  vector.set(colID-base,element);
+	        	  
+	        	  if(generated.contains((Integer)lineNumber)){
+	        		  if(id.get(count)!=null){
+	      					id.get(count).add(colID-base);
+	      					check++;
+	      				}
+		      			else{
+		      				ArrayList<Integer> colEntry=new ArrayList<Integer>();
+		      				colEntry.add(colID-base);
+		      				id.put(new Integer(count), colEntry);
+		      				check++;
+		      			}
+	        	  }
+	        	  lineNumber++;
 	          }
           }
           if(writer!=null) //append last vector in last file
           {
-	          key.set(lineNumber++);
+        	  
+	          key.set(count);
 	          value.set(vector);
 	    	  writer.append(key,value);//write last row
 	    	  System.out.println("Total number of rows"+count+"");
 	          writer.close();
           }
+          try {
+		         FileOutputStream fileOut =
+		         new FileOutputStream(outputFolderPath+File.separator+"mapMissingIDs.ser");
+		         ObjectOutputStream out = new ObjectOutputStream(fileOut);
+		         out.writeObject(id);
+		         out.close();
+		         fileOut.close();
+		         System.out.printf("Serialized data is saved in the output path");
+		      } catch (IOException i) {
+		         i.printStackTrace();
+		      }
           
     	}
     	catch (Exception e) {

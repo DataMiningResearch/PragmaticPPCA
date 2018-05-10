@@ -282,7 +282,7 @@ public class PragmaticPPCA implements Serializable {
 		
 
 		// Setting Spark configuration parameters
-		SparkConf conf = new SparkConf().setAppName("pragmaticPPCA").setMaster("local[*]");//
+		SparkConf conf = new SparkConf().setAppName("pragmaticPPCA");//.setMaster("local[*]");//
 		// TODO
 		// remove
 		// this
@@ -457,6 +457,7 @@ public class PragmaticPPCA implements Serializable {
 			missingIDs=sc.broadcast(null);
 		}
 		
+		final Accumulator<Double> check = sc.accumulator(new Double(0));
 		
 		JavaPairRDD<org.apache.spark.mllib.linalg.Vector,org.apache.spark.mllib.linalg.Vector> vectors 
 		
@@ -486,12 +487,11 @@ public class PragmaticPPCA implements Serializable {
 							continue;
 						
 						if(missingIdx!=null){//checking if the column is here
-							if(missingIdx.contains(i)){
+							if(missingIdx.contains(e.index())){
 								Tuple2<Integer, Double> tuple =
 										new Tuple2<Integer, Double>(e.index(), new Double(0));
 								tupleListMiss.add(tuple);
-								
-								i=i+1;
+								check.add(1.0);
 								continue;							
 							}
 						}
@@ -499,8 +499,7 @@ public class PragmaticPPCA implements Serializable {
 						Tuple2<Integer, Double> tuple =
 						new Tuple2<Integer, Double>(e.index(), e.get());
 						tupleListObs.add(tuple);
-							
-						i=i+1;
+						
 						
 						
 					}
@@ -515,6 +514,7 @@ public class PragmaticPPCA implements Serializable {
 		
 	
 		//vectors.count();
+		System.out.println(check.value());
 		
 		/**
 		 * get the missing indices for //TODO debug purpose only
@@ -603,6 +603,8 @@ public class PragmaticPPCA implements Serializable {
 			}
 
 		});// End Mean Job
+		
+		System.out.println("Number of missing elements"+check.value());
 		
 		Vector meanVector = new DenseVector(matrixAccumY.value()).divide(nRows);
 		final Broadcast<Vector> br_ym_mahout = sc.broadcast(meanVector);
