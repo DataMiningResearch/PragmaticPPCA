@@ -632,7 +632,7 @@ public class PragmaticPPCA implements Serializable {
 				double norm2 = 0;
 				double meanSquareSumOfZeroElements = meanSquareSum;
 				int[] indicesObs = ((SparseVector) arg0._1).indices();
-				int[] indicesMiss = ((SparseVector) arg0._2).indices();
+//				int[] indicesMiss = ((SparseVector) arg0._2).indices();
 				int i;
 				int index;
 				double v;
@@ -649,18 +649,18 @@ public class PragmaticPPCA implements Serializable {
 					meanSquareSumOfZeroElements -= mean * mean;
 					norm2 += diff;
 				}
-				for (i = 0; i < indicesMiss.length; i++) {
-					index = indicesMiss[i];
-					v = arg0._2.apply(index);
-					double mean = br_ym_mahout.value().getQuick(index);
-					double diff = v - mean;
-					diff *= diff;
-
-					// cancel the effect of the non-zero element in
-					// meanSquareSum
-					meanSquareSumOfZeroElements -= mean * mean;
-					norm2 += diff;
-				}
+//				for (i = 0; i < indicesMiss.length; i++) {
+//					index = indicesMiss[i];
+//					v = arg0._2.apply(index);
+//					double mean = br_ym_mahout.value().getQuick(index);
+//					double diff = v - mean;
+//					diff *= diff;
+//
+//					// cancel the effect of the non-zero element in
+//					// meanSquareSum
+//					meanSquareSumOfZeroElements -= mean * mean;
+//					norm2 += diff;
+//				}
 				// For all all zero items, the following has the sum of mean
 				// square
 				norm2 += meanSquareSumOfZeroElements;
