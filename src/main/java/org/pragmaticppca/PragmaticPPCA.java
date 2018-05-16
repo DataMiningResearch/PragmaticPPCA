@@ -235,9 +235,9 @@ public class PragmaticPPCA implements Serializable {
 		
 		try {
 			writeSeed = Boolean.parseBoolean(System.getProperty("writeSeed"));
-			System.out.println("writeSeed is set to true");	
+			System.out.println("writeSeed is set to:"+writeSeed);	
 		} catch (Exception e) {
-			System.out.println("writeSeed is set to false");				
+			System.out.println("writeSeed is set to :"+writeSeed);				
 		}
 		
 		try {
@@ -331,6 +331,7 @@ public class PragmaticPPCA implements Serializable {
 		//no map action with out reduce operation
 		calnnz.count();
 		int nnzElems=nnz.value();
+		System.out.println(nnzElems);
 		double[] n=noCol.value();
 		int size=(int) (nnzElems*percent/100);
 		Random r = new Random();
@@ -480,21 +481,28 @@ public class PragmaticPPCA implements Serializable {
 					}
 					
 					
-					int i=0;
+					if(missingIdx!=null){
+						for(int j=0;j<missingIdx.size();j++){
+							Tuple2<Integer, Double> tuple =
+									new Tuple2<Integer, Double>(missingIdx.get(j),
+											new Double(0));//TODO bias
+							tupleListMiss.add(tuple);
+							check.add(1.0);
+						}
+					}
+					
 					while (elements.hasNext()) {
 						Element e = elements.next();
-						if (e.index() >= nCols || e.get() == 0)
-							continue;
+						
 						
 						if(missingIdx!=null){//checking if the column is here
 							if(missingIdx.contains(e.index())){
-								Tuple2<Integer, Double> tuple =
-										new Tuple2<Integer, Double>(e.index(), new Double(0));
-								tupleListMiss.add(tuple);
-								check.add(1.0);
 								continue;							
 							}
 						}
+						
+						if (e.index() >= nCols || e.get() == 0)
+							continue;
 
 						Tuple2<Integer, Double> tuple =
 						new Tuple2<Integer, Double>(e.index(), e.get());
@@ -514,7 +522,7 @@ public class PragmaticPPCA implements Serializable {
 		
 	
 		//vectors.count();
-		System.out.println(check.value());
+		
 		
 		/**
 		 * get the missing indices for //TODO debug purpose only
@@ -583,21 +591,21 @@ public class PragmaticPPCA implements Serializable {
 				org.apache.spark.mllib.linalg.Vector yObsi;
 				org.apache.spark.mllib.linalg.Vector yMissi;
 				int[] indicesObs = null;
-				int[] indicesMiss = null;
+				//int[] indicesMiss = null;
 				int i;
 				while (arg0.hasNext()) {
 					Tuple2 <org.apache.spark.mllib.linalg.Vector,
 					org.apache.spark.mllib.linalg.Vector> entry= arg0.next();
 					yObsi = entry._1;
-					yMissi= entry._2;
+					//yMissi= entry._2;
 					indicesObs = ((SparseVector) yObsi).indices();
-					indicesMiss = ((SparseVector) yMissi).indices();
+					//indicesMiss = ((SparseVector) yMissi).indices();
 					for (i = 0; i < indicesObs.length; i++) {
 						internalSumY[indicesObs[i]] += yObsi.apply(indicesObs[i]);
 					}
-					for (i = 0; i < indicesMiss.length; i++) {
-						internalSumY[indicesMiss[i]] += yMissi.apply(indicesMiss[i]);
-					}
+//					for (i = 0; i < indicesMiss.length; i++) {
+//						internalSumY[indicesMiss[i]] += yMissi.apply(indicesMiss[i]);
+//					}
 				}
 				matrixAccumY.add(internalSumY);
 			}
@@ -715,7 +723,7 @@ public class PragmaticPPCA implements Serializable {
 		
 		
 		
-		System.out.println(meanVector);
+		
 		
 		// Get the sum of column Vector from the accumulator and divide each
 		// element by the number of rows to get the mean
@@ -1054,6 +1062,40 @@ public class PragmaticPPCA implements Serializable {
 		double target_error = tolerance; // 95% accuracy
 		Vector meanObsVector=meanVector;//mean of only observed values
 		
+//		//initialize missing values with mean
+//		final Broadcast<Vector> br_ym = sc.broadcast(meanVector);
+//		vectors=vectors.mapToPair(new PairFunction<Tuple2<org.apache.spark.mllib.linalg.Vector,
+//				org.apache.spark.mllib.linalg.Vector>,
+//						org.apache.spark.mllib.linalg.Vector,org.apache.spark.mllib.linalg.Vector>(){
+//
+//				@Override
+//				public Tuple2<org.apache.spark.mllib.linalg.Vector, org.apache.spark.mllib.linalg.Vector> call(
+//						Tuple2<org.apache.spark.mllib.linalg.Vector, org.apache.spark.mllib.linalg.Vector> t) throws Exception {
+//					org.apache.spark.mllib.linalg.Vector yObsi=t._1;
+//					org.apache.spark.mllib.linalg.Vector yMissi=t._2;
+//					
+//					int[] indicesMiss=((SparseVector)t._2).indices();
+//					if( indicesMiss.length!=0 ){
+//						
+//						double[] reconValues=new double[indicesMiss.length];
+//						for(int i=0; i <indicesMiss.length; i++){
+//							
+//							reconValues[i]=2.5br_ym.value().getQuick(indicesMiss[i]);
+//							//reconValues[i]=Math.ceil(reconValues[i]);
+//							//internalSumY[indicesMiss[i]] += reconValues[i];	
+//							if(reconValues[i]==0) reconValues[i]=new Random().nextInt(5);
+//						}
+//						yMissi=new SparseVector(nCols,indicesMiss,reconValues);
+//					}
+//													
+//					return new Tuple2<org.apache.spark.mllib.linalg.Vector,
+//							org.apache.spark.mllib.linalg.Vector>(yObsi, yMissi);
+//					// TODO Auto-generated method stub		
+//				}
+//			}
+//		).persist(StorageLevel.MEMORY_ONLY_SER());
+		
+		
 		for (; (round < maxIterations && relChangeInObjective > threshold && prevError > target_error); round++) {
 
 			// Sx = inv( ss * eye(d) + CtC );
@@ -1232,6 +1274,7 @@ public class PragmaticPPCA implements Serializable {
 						OutputFormat.DENSE, outputPath, "V"+round+".txt");
 			}
 			
+			
 			// Compute new value for ss
 			// ss = ( sum(sum(Ye.^2)) + trace(XtX*CtC) - 2sum(XiCtYit))/(N*D);
 
@@ -1271,6 +1314,22 @@ public class PragmaticPPCA implements Serializable {
 								Tuple2<org.apache.spark.mllib.linalg.Vector, org.apache.spark.mllib.linalg.Vector> t) throws Exception {
 							org.apache.spark.mllib.linalg.Vector yObsi=t._1;
 							org.apache.spark.mllib.linalg.Vector yMissi=t._2;
+							int[] indicesMiss=((SparseVector)t._2).indices();
+							if( indicesMiss.length!=0 && t._2.numNonzeros()==0){
+								
+								double[] reconValues=new double[indicesMiss.length];
+								for(int i=0; i <indicesMiss.length; i++){
+									
+									reconValues[i]=br_ym_mahout.value().getQuick(indicesMiss[i]);
+									//reconValues[i]=Math.ceil(reconValues[i]);
+									//internalSumY[indicesMiss[i]] += reconValues[i];	
+									if(reconValues[i]==0) reconValues[i]=new Random().nextInt(5);
+								}
+								yMissi=new SparseVector(nCols,indicesMiss,reconValues);
+							}
+							else{
+								yMissi=t._2;
+							}
 							
 							PCAUtils.sparseMissVectorTimesMatrix(yObsi,yMissi,
 									br_centralY2X.value(), resArrayX);
@@ -1284,7 +1343,7 @@ public class PragmaticPPCA implements Serializable {
 							org.apache.spark.mllib.linalg.Vector updatedYMissi=
 									PCAUtils.reconMissValue(yMissi, 
 											br_ym_mahout.value(), resArrayX,  
-											br_xm_mahout.value(), br_centralC.value());
+								 			br_xm_mahout.value(), br_centralC.value());
 											
 							return new Tuple2<org.apache.spark.mllib.linalg.Vector,
 									org.apache.spark.mllib.linalg.Vector>(yObsi, updatedYMissi);
@@ -1322,7 +1381,7 @@ public class PragmaticPPCA implements Serializable {
 				
 				meanVector=new DenseVector(matrixAccumY.value()).divide(nRows);
 				meanVector=meanVector.plus(meanObsVector);
-				System.out.println(meanVector);
+				
 				//br_ym_mahout.destroy();
 			}
 			
@@ -1384,7 +1443,23 @@ public class PragmaticPPCA implements Serializable {
 
 		// save statistics
 		PCAUtils.printStatToFile(stat, outputPath);
-				
+		
+		    //7. Compute Projected Matrix Job: The job multiplies the input matrix Y with the principal components C to get the Projected vectors 
+	  	final Broadcast<Matrix> br_centralC = sc.broadcast(centralC);
+	  	 JavaRDD<org.apache.spark.mllib.linalg.Vector> projectedVectors=
+	  			 vectors.map(new Function<
+	  					 Tuple2<org.apache.spark.mllib.linalg.Vector,org.apache.spark.mllib.linalg.Vector>
+	  					 , org.apache.spark.mllib.linalg.Vector>() {
+			
+			public org.apache.spark.mllib.linalg.Vector call(
+					 Tuple2<org.apache.spark.mllib.linalg.Vector,
+					 org.apache.spark.mllib.linalg.Vector> y) throws Exception {					 
+				return PCAUtils.sparseVectorTimesMatrix(y._1,y._2,br_centralC.value(),2);
+			}
+	    });//End Compute Projected Matrix
+	  	String path=outputPath+ File.separator + "ProjectedMatrix";
+	  	projectedVectors.saveAsTextFile(path);
+    
 		return PCAUtils
 				.convertMahoutToSparkMatrix(new org.apache.mahout.math.SingularValueDecomposition(centralC).getU());
 

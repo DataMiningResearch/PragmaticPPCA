@@ -467,6 +467,7 @@ class PCAUtils {
 				reconValues[i] += matrix.getQuick(indicesMiss[i],col)*(resArray[col]-xm.getQuick(col));	
 			}
 			reconValues[i]+=ym.getQuick(indicesMiss[i]);
+			reconValues[i]=Math.ceil(reconValues[i]);
 			//internalSumY[indicesMiss[i]] += reconValues[i];			
 		}
 		return new SparseVector(matrix.numRows(),indicesMiss,reconValues);
@@ -497,6 +498,41 @@ class PCAUtils {
 			}
 		}
 		org.apache.spark.mllib.linalg.Vector sparkVector = Vectors.sparse(matrixCols,tupleList);
+        return sparkVector;
+	}
+	
+	static org.apache.spark.mllib.linalg.Vector sparseVectorTimesMatrix
+	(org.apache.spark.mllib.linalg.Vector sparseObsVector,
+			org.apache.spark.mllib.linalg.Vector sparseMissVector,
+			Matrix matrix, int colNum) {
+		int[] indicesObs,indicesMiss;
+		ArrayList<Tuple2<Integer, Double>> tupleList = new  ArrayList<Tuple2<Integer, Double>>();
+		for (int col = 0; col < colNum; col++) 
+		{
+			indicesObs=((SparseVector)sparseObsVector).indices();
+			indicesMiss=((SparseVector)sparseMissVector).indices();
+			int index = 0, i=0;
+			double value = 0;
+			double dotRes = 0;
+			for(i=0; i <indicesObs.length; i++)
+			{
+				index=indicesObs[i];
+				value=sparseObsVector.apply(index);
+				dotRes += matrix.getQuick(index,col) * value;
+			}
+			for(i=0; i <indicesMiss.length; i++)
+			{
+				index=indicesMiss[i];
+				value=sparseObsVector.apply(index);
+				dotRes += matrix.getQuick(index,col) * value;
+			}
+			if(dotRes !=0)
+			{
+				Tuple2<Integer,Double> tuple = new Tuple2<Integer,Double>(col,dotRes);
+				tupleList.add(tuple);
+			}
+		}
+		org.apache.spark.mllib.linalg.Vector sparkVector = Vectors.sparse(colNum,tupleList);
         return sparkVector;
 	}
 	
